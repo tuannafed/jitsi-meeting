@@ -5,7 +5,7 @@ import { MeetForm } from '@/features/meet/components/MeetForm';
 
 export function JitsiMeetPage() {
   return (
-    <PageContainer className="max-w-xl mx-auto flex items-center">
+    <PageContainer>
       <MeetForm />
     </PageContainer>
   );

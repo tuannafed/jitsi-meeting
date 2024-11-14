@@ -61,88 +61,97 @@ export function MeetForm() {
   return (
     <Fragment>
       {onCall ? (
-        <Jitsi
-          roomName={form.getValues('roomName')}
-          displayName={form.getValues('yourName')}
-          password={form.getValues('password')}
-          loadingComponent={Loader}
-          config={{
-            startWithAudioMuted: true,
-            startScreenSharing: true,
-            enableEmailInStats: false,
-            disable1On1Mode: true,
-          }}
-          interfaceConfig={{
-            DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-          }}
-          jwt={process.env.NEXT_PUBLIC_JITSI_JWT}
-          onAPILoad={handleAPI}
-        />
+        <div className="main">
+          <Jitsi
+            roomName={form.getValues('roomName')}
+            displayName={form.getValues('yourName')}
+            password={form.getValues('password')}
+            loadingComponent={Loader}
+            config={{
+              startWithAudioMuted: true,
+              startScreenSharing: true,
+              enableEmailInStats: false,
+              disable1On1Mode: true,
+            }}
+            interfaceConfig={{
+              DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+              SHOW_CHROME_EXTENSION_BANNER: false,
+            }}
+            jwt={process.env.NEXT_PUBLIC_JITSI_JWT}
+            onAPILoad={handleAPI}
+            containerStyle={{
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        </div>
       ) : (
-        <CardWrapper
-          headerTitle="Jitsi Meet Nextjs Demo"
-          headerLabel="An example usage of the Jitsi Meet React component."
-        >
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
-              <FormField
-                control={form.control}
-                name="roomName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RoomName</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your room name..."
-                        disabled={isPending}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <div className="max-w-xl mx-auto flex items-center h-full">
+          <CardWrapper
+            headerTitle="Jitsi Meet Nextjs Demo"
+            headerLabel="An example usage of the Jitsi Meet React component."
+          >
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+                <FormField
+                  control={form.control}
+                  name="roomName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>RoomName</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your room name..."
+                          disabled={isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="yourName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Your Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your your name..."
-                        disabled={isPending}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="yourName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your your name..."
+                          disabled={isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <PasswordInput {...field} disabled={isPending} placeholder="******" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <PasswordInput {...field} disabled={isPending} placeholder="******" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="w-full flex justify-center !mt-8">
-                <Button disabled={isPending} className="w-[120px]" type="submit">
-                  {isPending ? 'Starting...' : 'Let start!'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardWrapper>
+                <div className="w-full flex justify-center !mt-8">
+                  <Button disabled={isPending} className="w-[120px]" type="submit">
+                    {isPending ? 'Starting...' : 'Let start!'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardWrapper>
+        </div>
       )}
     </Fragment>
   );
