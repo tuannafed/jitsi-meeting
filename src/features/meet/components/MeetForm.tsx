@@ -53,6 +53,8 @@ export function MeetForm() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAPI = (JitsiMeetAPI: any) => {
+    // eslint-disable-next-line no-console
+    console.log('JitsiMeetAPI =======>> ');
     JitsiMeetAPI.executeCommand('toggleVideo');
   };
 
