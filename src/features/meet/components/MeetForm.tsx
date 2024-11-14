@@ -36,7 +36,7 @@ export function MeetForm() {
     },
   });
 
-  const onSubmit = async (data: TRoomReq) => {
+  const onSubmit = async () => {
     startTransition(async () => {
       try {
         setOnCall(true);
