@@ -1,0 +1,6 @@
+.git
+.husky
+.storybook
+.vscode
+.next
+node_modules
