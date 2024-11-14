@@ -73,6 +73,7 @@ export function MeetForm() {
           interfaceConfig={{
             DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
           }}
+          jwt={process.env.NEXT_PUBLIC_JITSI_JWT}
           onAPILoad={handleAPI}
         />
       ) : (
