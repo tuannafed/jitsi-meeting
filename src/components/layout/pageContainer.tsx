@@ -18,10 +18,10 @@ export default function PageContainer({
     <Fragment>
       {scrollable ? (
         <ScrollArea className={cn('h-[calc(100dvh-52px)]', scrollClassName)}>
-          <div className={cn('h-full py-4 px-4 md:px-8', className)}>{children}</div>
+          <div className={cn('h-full p-4', className)}>{children}</div>
         </ScrollArea>
       ) : (
-        <div className={cn('h-full py-4 px-4 md:px-8', className)}>{children}</div>
+        <div className={cn('h-full w-full', className)}>{children}</div>
       )}
     </Fragment>
   );

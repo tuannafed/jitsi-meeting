@@ -1,9 +1,9 @@
+/* eslint-disable no-console */
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Fragment, useState, useTransition } from 'react';
+import { Fragment, useRef, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import Jitsi from 'react-jitsi';
 
 import { CardWrapper } from '@/components/card/cardWrapper';
 import { Loader } from '@/components/loader';
@@ -19,13 +19,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 import { RoomReqSchema, TRoomReq } from '@/schemas/meet/request';
+import { importJitsiApi } from '@/utils';
+
+import * as Default from '../defaults';
+import { JitsiMeetAPIOptions } from '../types';
 
 export function MeetForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
+  const [loading, setLoading] = useState(false);
   const [onCall, setOnCall] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const form = useForm<TRoomReq>({
     resolver: zodResolver(RoomReqSchema),
@@ -39,7 +46,8 @@ export function MeetForm() {
   const onSubmit = async () => {
     startTransition(async () => {
       try {
-        setOnCall(true);
+        setLoading(true);
+        startConference();
         // Do something with the form data
       } catch (e) {
         toast({
@@ -51,41 +59,71 @@ export function MeetForm() {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleAPI = (JitsiMeetAPI: any) => {
-    // eslint-disable-next-line no-console
-    console.log('JitsiMeetAPI =======>> ');
-    JitsiMeetAPI.executeCommand('toggleVideo');
+  const startConference = async () => {
+    console.log('ref.current :>> ', ref.current);
+    if (!ref.current) return;
+
+    try {
+      const JitsiMeetExternalAPI: any = await importJitsiApi().catch((err) => {
+        console.error('Jitsi Meet API library not loaded.', err);
+      });
+      console.log('JitsiMeetExternalAPI :>> ', JitsiMeetExternalAPI);
+
+      const options: JitsiMeetAPIOptions = {
+        roomName: form.getValues('roomName'),
+        parentNode: ref.current as any,
+        configOverwrite: {
+          startWithAudioMuted: true,
+          startScreenSharing: true,
+          enableEmailInStats: false,
+          disable1On1Mode: true,
+        },
+        interfaceConfigOverwrite: {
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+          SHOW_CHROME_EXTENSION_BANNER: false,
+        },
+        jwt: process.env.NEXT_PUBLIC_JITSI_JWT,
+        userInfo: {
+          email: '',
+        },
+      };
+      const domain = 'meet.jit.si';
+      const displayName = form.getValues('yourName');
+      const password = form.getValues('password');
+
+      const api = new JitsiMeetExternalAPI(domain, options);
+
+      console.log('api :>> ', api);
+
+      if (!api) throw new Error('Failed to create JitsiMeetExternalAPI istance');
+
+      setLoading(false);
+      setOnCall(true);
+
+      api.addEventListener('videoConferenceJoined', () => {
+        console.log('loading :>> ', loading);
+
+        api.executeCommand('displayName', displayName);
+
+        if (domain === Default.Props.domain && password) api.executeCommand('password', password);
+      });
+
+      /**
+       * If we are on a self hosted Jitsi domain, we need to become moderators before setting a password
+       * Issue: https://community.jitsi.org/t/lock-failed-on-jitsimeetexternalapi/32060
+       */
+      api.addEventListener('participantRoleChanged', (e: { id: string; role: string }) => {
+        if (domain !== Default.Props.domain && password && e.role === 'moderator')
+          api.executeCommand('password', password);
+      });
+    } catch (error) {
+      console.error('Failed to start the conference', error);
+    }
   };
 
   return (
     <Fragment>
-      {onCall ? (
-        <div className="main">
-          <Jitsi
-            roomName={form.getValues('roomName')}
-            displayName={form.getValues('yourName')}
-            password={form.getValues('password')}
-            loadingComponent={Loader}
-            config={{
-              startWithAudioMuted: true,
-              startScreenSharing: true,
-              enableEmailInStats: false,
-              disable1On1Mode: true,
-            }}
-            interfaceConfig={{
-              DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-              SHOW_CHROME_EXTENSION_BANNER: false,
-            }}
-            jwt={process.env.NEXT_PUBLIC_JITSI_JWT}
-            onAPILoad={handleAPI}
-            containerStyle={{
-              width: '100%',
-              height: '100%',
-            }}
-          />
-        </div>
-      ) : (
+      {!onCall && (
         <div className="max-w-xl mx-auto flex items-center h-full">
           <CardWrapper
             headerTitle="Jitsi Meet Nextjs Demo"
@@ -153,6 +191,12 @@ export function MeetForm() {
           </CardWrapper>
         </div>
       )}
+      <div className={cn('main')}>
+        <div id="react-jitsi-container" style={{ ...Default.ContainerStyle }}>
+          {loading && <Loader />}
+          <div id="react-jitsi-frame" style={{ ...Default.FrameStyle(loading) }} ref={ref} />
+        </div>
+      </div>
     </Fragment>
   );
 }
